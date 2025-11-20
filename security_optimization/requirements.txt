@@ -1,0 +1,5 @@
+# requirements.txt
+numpy>=1.21.0
+matplotlib>=3.5.0  # Para visualizações
+pytest>=7.0.0      # Para testes
+python-dateutil>=2.8.2
