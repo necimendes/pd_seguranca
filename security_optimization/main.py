@@ -1,4 +1,8 @@
 # main.py
+import sys
+import os
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+
 from datetime import datetime
 from models.security_incident import SecurityIncident, IncidentType
 from models.resource import Resource, ResourceType
@@ -9,8 +13,7 @@ import uuid
 
 class ComputerSecurityManagementSystem:
     """
-    Sistema completo de gestão de segurança otimizada
-    Integra todos os componentes descritos no artigo
+    Sistema completo de gestão de segurança otimizada - CORRIGIDO
     """
     
     def __init__(self):
@@ -42,23 +45,30 @@ class ComputerSecurityManagementSystem:
             required_resources=required_resources
         )
         self.incidents.append(incident)
+        print(f"✅ Incidente adicionado: {incident_type.value} (Prioridade: {incident.priority:.2f})")
     
     def optimize_security_management(self):
         """
         Executa a otimização completa do gerenciamento de segurança
-        conforme descrito no artigo
         """
         print("=== INICIANDO OTIMIZAÇÃO DE SEGURANÇA ===")
+        print(f"Total de incidentes: {len(self.incidents)}")
+        
+        if not self.incidents:
+            print("❌ Nenhum incidente para otimizar!")
+            return None
         
         # 1. Otimização da sequência de resposta com PD
         print("\n1. Otimizando sequência de resposta...")
         optimal_sequence = self.dp_optimizer.optimize_response_sequence(self.incidents)
-        print(f"Sequência ótima: {[inc.type.value for inc in optimal_sequence]}")
+        sequence_types = [inc.type.value for inc in optimal_sequence]
+        print(f"📊 Sequência ótima: {sequence_types}")
+        print(f"🔢 Incidentes na sequência: {len(optimal_sequence)}/{len(self.incidents)}")
         
         # 2. Otimização de alocação de recursos
         print("\n2. Otimizando alocação de recursos...")
         resource_allocation = self.resource_allocator.optimize_allocation(optimal_sequence)
-        print(f"Alocação de recursos: {resource_allocation}")
+        print(f"📦 Alocação de recursos: {resource_allocation}")
         
         # 3. Otimização da estratégia com Recozimento Simulado
         print("\n3. Otimizando estratégia de proteção...")
@@ -70,7 +80,7 @@ class ComputerSecurityManagementSystem:
         optimal_strategy = self.sa_optimizer.optimize_protection_strategy(
             optimal_sequence, initial_strategy
         )
-        print(f"Estratégia ótima: {optimal_strategy}")
+        print(f"🛡️ Estratégia ótima: Nível de proteção {optimal_strategy.get('protection_level', 0)*100:.1f}%")
         
         return {
             'response_sequence': optimal_sequence,
@@ -79,25 +89,40 @@ class ComputerSecurityManagementSystem:
         }
     
     def generate_performance_report(self, optimization_result: dict):
-        """Gera relatório de performance como no artigo"""
-        print("\n" + "="*50)
-        print("RELATÓRIO DE PERFORMANCE")
-        print("="*50)
+        """Gera relatório de performance"""
+        if not optimization_result:
+            return
+            
+        print("\n" + "="*60)
+        print("📈 RELATÓRIO DE PERFORMANCE - SISTEMA DE SEGURANÇA")
+        print("="*60)
         
         sequence = optimization_result['response_sequence']
-        original_time = sum(inc.estimated_response_time for inc in self.incidents)
-        optimized_time = sum(inc.estimated_response_time for inc in sequence)
         
-        time_reduction = ((original_time - optimized_time) / original_time) * 100
-        resource_utilization = self._calculate_resource_utilization()
-        
-        print(f"Tempo total de resposta: {optimized_time:.1f} min (Redução de {time_reduction:.1f}%)")
-        print(f"Utilização média de recursos: {resource_utilization:.1f}%")
-        print(f"Número de incidentes processados: {len(sequence)}")
-        print(f"Eficiência de proteção: {optimization_result['protection_strategy'].get('protection_level', 0)*100:.1f}%")
+        if sequence:
+            original_time = sum(inc.estimated_response_time for inc in self.incidents)
+            optimized_time = sum(inc.estimated_response_time for inc in sequence)
+            
+            time_reduction = ((original_time - optimized_time) / original_time) * 100 if original_time > 0 else 0
+            resource_utilization = self._calculate_resource_utilization()
+            
+            print(f"⏱️  Tempo total de resposta: {optimized_time:.1f} min")
+            print(f"📉 Redução de tempo: {time_reduction:.1f}%")
+            print(f"💾 Utilização média de recursos: {resource_utilization:.1f}%")
+            print(f"🔢 Incidentes processados: {len(sequence)}/{len(self.incidents)}")
+            print(f"🛡️ Eficiência de proteção: {optimization_result['protection_strategy'].get('protection_level', 0)*100:.1f}%")
+            
+            # Estatísticas dos incidentes
+            high_priority = sum(1 for inc in sequence if inc.priority > 0.7)
+            print(f"🎯 Incidentes de alta prioridade tratados: {high_priority}")
+        else:
+            print("❌ Nenhum incidente foi processado na otimização!")
     
     def _calculate_resource_utilization(self) -> float:
         """Calcula utilização média de recursos"""
+        if not self.resources:
+            return 0.0
+            
         total_utilization = 0
         for resource in self.resources.values():
             utilization = (resource.current_usage / resource.capacity) * 100
@@ -105,10 +130,13 @@ class ComputerSecurityManagementSystem:
         
         return total_utilization / len(self.resources)
 
-# Exemplo de uso
+# Exemplo de uso CORRIGIDO
 if __name__ == "__main__":
     # Cria sistema de gestão
     security_system = ComputerSecurityManagementSystem()
+    
+    print("🚀 INICIALIZANDO SISTEMA DE SEGURANÇA COMPUTACIONAL")
+    print("=" * 50)
     
     # Adiciona incidentes de exemplo (conforme artigo)
     security_system.add_incident(
@@ -135,8 +163,20 @@ if __name__ == "__main__":
         required_resources=['storage', 'computation']
     )
     
+    security_system.add_incident(
+        IncidentType.RANSOMWARE,
+        severity=0.95,
+        impact=0.9, 
+        estimated_response=40,
+        required_resources=['computation', 'security_analyst', 'storage']
+    )
+    
     # Executa otimização completa
     result = security_system.optimize_security_management()
     
     # Gera relatório
     security_system.generate_performance_report(result)
+    
+    print("\n" + "="*50)
+    print("✅ SISTEMA FINALIZADO COM SUCESSO!")
+    print("="*50)
